@@ -76,7 +76,7 @@ for vt in range(1, 8):
     )
 
 
-groups = [Group(i) for i in "123456789"]
+groups = [Group(i) for i in "12345"]
 
 for i in groups:
     keys.extend(
@@ -133,18 +133,24 @@ screens = [
                 widget.GroupBox(),
                 widget.Prompt(),
                 widget.WindowName(),
-                widget.Chord(
-                    chords_colors={
-                        "launch": ("#ff0000", "#ffffff"),
-                    },
-                    name_transform=lambda name: name.upper(),
-                ),
-                widget.TextBox("default config", name="default"),
-                widget.TextBox("Press &lt;M-r&gt; to spawn", foreground="#d75f5f"),
+              
                 # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-                # widget.StatusNotifier(),
-                widget.Systray(),
+                #widget.StatusNotifier(),
+
+
                 widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
+                widget.Systray(),
+                widget.CPU(
+                    format='CPU: {load_percent}%', 
+                    update_interval=1, 
+                    foreground='00ff00'
+                ),
+                widget.Memory(
+                    format='RAM: {MemPercent:.0f}%',
+                    measure_mem='G',
+                    update_interval=1,
+                    foreground='ff0000'
+                ),
                 widget.QuickExit(),
             ],
             24,
