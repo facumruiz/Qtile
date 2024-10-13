@@ -129,17 +129,11 @@ screens = [
     Screen(
         bottom=bar.Bar(
             [
+
                 widget.CurrentLayout(),
                 widget.GroupBox(),
                 widget.Prompt(),
                 widget.WindowName(),
-              
-                # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-                #widget.StatusNotifier(),
-
-
-                widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
-                widget.Systray(),
                 widget.CPU(
                     format='CPU: {load_percent}%', 
                     update_interval=1, 
@@ -151,6 +145,25 @@ screens = [
                     update_interval=1,
                     foreground='ff0000'
                 ),
+              
+                # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
+                #widget.StatusNotifier(),
+
+                widget.Mpris2(
+                    name='spotify',
+                    objname="org.mpris.MediaPlayer2.spotify",
+                    display_metadata=['xesam:title', 'xesam:artist'],
+                    playing_text = " ⏵ {track} ",
+                    paused_text  = " Pone play ",
+                    scroll_chars=None,
+                    foreground="#191414",  # Color del texto
+                    background="#1db954",  # Color de fondo de Spotify
+                    update_interval=1,
+                    max_chars=30  # Número máximo de caracteres para mostrar
+                ),
+                widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
+                widget.Systray(),
+
                 widget.QuickExit(),
             ],
             24,
