@@ -33,11 +33,15 @@ mod = "mod4"
 terminal = guess_terminal()
 
 keys = [
+    # Control de ventanas
+    Key([mod, "shift"], "f", lazy.window.toggle_floating(), desc="Toggle floating"),
     Key([mod], "Left", lazy.layout.left(), desc="Mover foco a la izquierda"),
     Key([mod], "Right", lazy.layout.right(), desc="Mover foco a la derecha"),
     Key([mod], "Down", lazy.layout.down(), desc="Mover foco abajo"),
     Key([mod], "Up", lazy.layout.up(), desc="Mover foco arriba"),
     Key([mod], "space", lazy.layout.next(), desc="Cambiar foco a otra ventana"),
+
+    # Mover y cambiar tamaño de ventanas
     Key([mod, "shift"], "Left", lazy.layout.shuffle_left(), desc="Mover ventana a la izquierda"),
     Key([mod, "shift"], "Right", lazy.layout.shuffle_right(), desc="Mover ventana a la derecha"),
     Key([mod, "shift"], "Down", lazy.layout.shuffle_down(), desc="Mover ventana abajo"),
@@ -48,19 +52,32 @@ keys = [
     Key([mod, "control"], "Up", lazy.layout.grow_up(), desc="Expandir ventana hacia arriba"),
     Key([mod], "n", lazy.layout.normalize(), desc="Normalizar tamaño de ventanas"),
     Key([mod, "shift"], "Return", lazy.layout.toggle_split(), desc="Alternar entre vistas divididas"),
+
+    # Apertura de aplicaciones
     Key([mod], "Return", lazy.spawn(terminal), desc="Abrir terminal"),
     Key([mod], "Tab", lazy.next_layout(), desc="Cambiar de diseño"),
     Key([mod], "w", lazy.window.kill(), desc="Cerrar ventana"),
+    
+    # Comandos y recarga de configuración
     Key([mod], "r", lazy.spawncmd(), desc="Ejecutar comando"),
     Key([mod, "control"], "r", lazy.reload_config(), desc="Recargar configuración de Qtile"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Apagar Qtile"),
+
+    # Cambiar de grupo
     Key([mod], "q", lazy.screen.prev_group(), desc="Cambiar al grupo anterior"),
     Key([mod], "e", lazy.screen.next_group(), desc="Cambiar al siguiente grupo"),
+
+    # Maximizar ventana
     Key([mod], "f", lazy.window.toggle_maximize(), desc="Maximizar ventana (sin ocultar barra)"),
+
+    # Acceso a aplicaciones específicas
     Key([mod], "p", lazy.spawn("/home/facu/Documentos/Emulador/ps2"), desc="Abrir emulador de PS2"),
-    Key([mod], "m", lazy.spawn("xset led on"), desc="Encender luces del teclado"),
-    Key([mod], "n", lazy.spawn("xset led off"), desc="Apagar luces del teclado"),
+    
+    # Control de luces del teclado
+    Key([mod], "Scroll_Lock", lazy.spawn("xset led on"), desc="Encender luces del teclado"),
+    Key([mod, "shift"], "Scroll_Lock", lazy.spawn("xset led off"), desc="Apagar luces del teclado"),
 ]
+
 
 # Add key bindings to switch VTs in Wayland.
 # We can't check qtile.core.name in default config as it is loaded before qtile is started
@@ -125,62 +142,87 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
+background_paleta = {
+    "spotify": "#1db954",  # Verde Spotify
+    "rojo": "#ab3333",  # Rojo complementario
+    "verde_oscuro": "#14532d",  # Análogo verde oscuro
+    "verde_lima": "#82e776",  # Análogo verde claro
+    "blanco": "#ffffff",  # Neutro
+    "gris_claro": "#f0f0f0",  # Neutro
+    "negro": "#191414",  # Neutro oscuro
+    "hora": "#45112b",
+}
+
 screens = [
     Screen(
         bottom=bar.Bar(
             [
-
-                widget.CurrentLayout(),
-                widget.GroupBox(),
-                widget.Prompt(),
-                widget.WindowName(),
-                widget.CPU(
-                    format='CPU: {load_percent}%', 
-                    update_interval=1, 
-                    foreground='00ff00'
+                widget.GroupBox(background=background_paleta["negro"]),
+                widget.Prompt(
+                    background=background_paleta["blanco"],
+                    foreground=background_paleta["negro"],
                 ),
-                widget.Memory(
-                    format='RAM: {MemPercent:.0f}%',
-                    measure_mem='G',
-                    update_interval=1,
-                    foreground='ff0000'
+                widget.WindowName(background=background_paleta["negro"]),
+                widget.Image(
+                    filename="~/.config/qtile/icons/spotify.svg",
+                    background=background_paleta["spotify"],
+                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("spotify")},
+                    scale=True,
+                    margin=4.5,  # Espacio alrededor de la imagen
                 ),
-              
-                # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-                #widget.StatusNotifier(),
-
                 widget.Mpris2(
-                    name='spotify',
+                    name="spotify",
                     objname="org.mpris.MediaPlayer2.spotify",
-                    display_metadata=['xesam:title', 'xesam:artist'],
-                    playing_text = " ⏵ {track} ",
-                    paused_text  = " Pone play ",
-                    scroll_chars=None,
-                    foreground="#191414",  # Color del texto
-                    background="#1db954",  # Color de fondo de Spotify
+                    display_metadata=["xesam:title", "xesam:artist"],
+                    playing_text="{track}  ",
+                    paused_text=" Pause ",
                     update_interval=1,
-                    max_chars=30  # Número máximo de caracteres para mostrar
+                    max_chars=30,
+                    foreground=background_paleta["negro"],
+                    background=background_paleta["spotify"],
                 ),
-                widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
-                widget.Systray(),
-
-                widget.QuickExit(),
+                widget.Spacer(
+                    foreground=background_paleta["blanco"],
+                    background=background_paleta["negro"],
+                    length=10,
+                ),
+                widget.Clock(
+                    format="%d/%m/%Y %a %I:%M %p",
+                    foreground=background_paleta["blanco"],
+                    background=background_paleta["negro"],
+                ),
+                widget.Spacer(
+                    foreground=background_paleta["blanco"],
+                    background=background_paleta["rojo"],
+                    length=10,
+                ),
+                widget.QuickExit(
+                    default_text="⏻",
+                    fontsize=18,
+                    background=background_paleta["rojo"],
+                    foreground=background_paleta["blanco"],
+                ),
+                widget.Spacer(
+                    foreground=background_paleta["blanco"],
+                    background=background_paleta["rojo"],
+                    length=10,
+                ),
             ],
             24,
-            # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
-            # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
         ),
-        # You can uncomment this variable if you see that on X11 floating resize/moving is laggy
-        # By default we handle these events delayed to already improve performance, however your system might still be struggling
-        # This variable is set to None (no cap) by default, but you can set it to 60 to indicate that you limit it to 60 events per second
-        # x11_drag_polling_rate = 60,
     ),
 ]
-
 # Drag floating layouts.
 mouse = [
-    Drag([mod], "Button1", lazy.window.set_position_floating(), start=lazy.window.get_position()),
-    Drag([mod], "Button3", lazy.window.set_size_floating(), start=lazy.window.get_size()),
+    Drag(
+        [mod],
+        "Button1",
+        lazy.window.set_position_floating(),
+        start=lazy.window.get_position(),
+    ),
+    Drag(
+        [mod], "Button3", lazy.window.set_size_floating(), start=lazy.window.get_size()
+    ),
     Click([mod], "Button2", lazy.window.bring_to_front()),
 ]
 
