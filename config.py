@@ -76,6 +76,13 @@ keys = [
     # Control de luces del teclado
     Key([mod], "Scroll_Lock", lazy.spawn("xset led on"), desc="Encender luces del teclado"),
     Key([mod, "shift"], "Scroll_Lock", lazy.spawn("xset led off"), desc="Apagar luces del teclado"),
+
+    # Control de sonido o reproduccion
+    Key([mod], "m", lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle"), desc="Silenciar/activar sonido"),  # Silenciar
+    Key([mod], "n", lazy.spawn("playerctl next"), desc="Siguiente pista"),  # Pasar a la siguiente pista
+    Key([mod], "b", lazy.spawn("playerctl previous"), desc="Retroceder a la pista anterior"),  # Retroceder a la pista anterior
+    Key([mod], "space", lazy.spawn("playerctl play-pause"), desc="Reproducir/Pausar"),  # Reproducir/Pausar
+
 ]
 
 
