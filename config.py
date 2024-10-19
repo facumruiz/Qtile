@@ -222,6 +222,7 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
+
 class ColorPalette:
     def __init__(self):
         self.colors = {
@@ -233,7 +234,7 @@ class ColorPalette:
             "gris_claro": "#f0f0f0",  # Neutro
             "negro": "#191414",  # Neutro oscuro
             "hora": "#45112b",
-            "violeta":"#2d152b",
+            "violeta": "#2d152b",
         }
 
     def with_opacity(self, color_name, opacity):
@@ -255,7 +256,7 @@ opacity = 0.75  # Opacidad deseada
 
 # Definición de colores específicos para GroupBox
 groupbox_colors = {
-    "background": background_paleta.with_opacity("violeta", opacity),
+    "background": background_paleta.with_opacity("negro", opacity),
     "active": background_paleta.colors["spotify"],
     "inactive": "#b0b0b0",
     "this_current_screen_border": "#000000",
@@ -277,9 +278,13 @@ screens = [
                     active=groupbox_colors["active"],
                     inactive=groupbox_colors["inactive"],
                     highlight_method="block",
-                    this_current_screen_border=groupbox_colors["this_current_screen_border"],
+                    this_current_screen_border=groupbox_colors[
+                        "this_current_screen_border"
+                    ],
                     this_screen_border=groupbox_colors["this_screen_border"],
-                    other_current_screen_border=groupbox_colors["other_current_screen_border"],
+                    other_current_screen_border=groupbox_colors[
+                        "other_current_screen_border"
+                    ],
                     other_screen_border=groupbox_colors["other_screen_border"],
                     urgent_border=groupbox_colors["urgent_border"],
                     disable_drag=True,
@@ -288,21 +293,29 @@ screens = [
                     use_mouse_wheel=True,
                     padding=10,
                     spacing=5,
-                    background=groupbox_colors["background"],  # Fondo de cada grupo con opacidad
+                    background=groupbox_colors[
+                        "background"
+                    ],  # Fondo de cada grupo con opacidad
                 ),
                 widget.Prompt(
-                    background=background_paleta.with_opacity("blanco", opacity),  # Fondo blanco con opacidad
+                    background=background_paleta.with_opacity(
+                        "blanco", opacity
+                    ),  # Fondo blanco con opacidad
                     foreground=background_paleta.colors["negro"],
                 ),
                 widget.WindowName(
-                    background=groupbox_colors["background"],  # Fondo negro con opacidad
+                    background=groupbox_colors[
+                        "background"
+                    ],  # Fondo negro con opacidad
                 ),
                 widget.Image(
                     filename="~/.config/qtile/icons/spotify.svg",
-                    background=groupbox_colors["background"],  # Fondo negro con opacidad
+                    background=groupbox_colors[
+                        "background"
+                    ],  # Fondo negro con opacidad
                     mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("spotify")},
                     scale=True,
-                    margin=4.5,
+                    margin=8.5,
                 ),
                 widget.Mpris2(
                     name="spotify",
@@ -313,41 +326,61 @@ screens = [
                     update_interval=1,
                     max_chars=30,
                     foreground=groupbox_colors["active"],
-                    background=groupbox_colors["background"],  # Fondo negro con opacidad
+                    background=groupbox_colors[
+                        "background"
+                    ],  # Fondo negro con opacidad
                 ),
                 widget.Spacer(
                     foreground=background_paleta.colors["blanco"],
-                    background=groupbox_colors["background"],  # Fondo negro con opacidad
-                    length=10,
+                    background=groupbox_colors[
+                        "background"
+                    ],  # Fondo negro con opacidad
+                    length=20,
                 ),
                 widget.Clock(
-                    format="%d/%m/%Y %a %I:%M %p",
+                    format="%I:%M %p\n%d/%m/%Y",  # Formato con la hora en la parte superior y la fecha en la parte inferior
                     foreground=background_paleta.colors["blanco"],
-                    background=groupbox_colors["background"],  # Fondo negro con opacidad
+                    background=groupbox_colors[
+                        "background"
+                    ],  # Fondo negro con opacidad
                 ),
                 widget.Spacer(
                     foreground=background_paleta.colors["blanco"],
-                    background=background_paleta.with_opacity("rojo", opacity),  # Fondo rojo con opacidad
+                    background=groupbox_colors[
+                        "background"
+                    ],  # Fondo negro con opacidad
+                    length=20,
+                ),
+                widget.Spacer(
+                    foreground=background_paleta.colors["blanco"],
+                    background=background_paleta.with_opacity(
+                        "rojo", opacity
+                    ),  # Fondo rojo con opacidad
                     length=10,
                 ),
                 widget.QuickExit(
                     default_text="⏻",
                     fontsize=18,
-                    background=background_paleta.with_opacity("rojo", opacity),  # Fondo rojo con opacidad
+                    background=background_paleta.with_opacity(
+                        "rojo", opacity
+                    ),  # Fondo rojo con opacidad
                     foreground=background_paleta.colors["blanco"],
                 ),
                 widget.Spacer(
                     foreground=background_paleta.colors["blanco"],
-                    background=background_paleta.with_opacity("rojo", opacity),  # Fondo rojo con opacidad
+                    background=background_paleta.with_opacity(
+                        "rojo", opacity
+                    ),  # Fondo rojo con opacidad
                     length=10,
                 ),
             ],
-            24,
-            background=groupbox_colors["background"],  # Fondo negro con opacidad para la barra
+            35,
+            background=groupbox_colors[
+                "background"
+            ],  # Fondo negro con opacidad para la barra
         ),
     ),
 ]
-
 
 
 # Drag floating layouts.
