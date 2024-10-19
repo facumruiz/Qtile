@@ -24,11 +24,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from libqtile import bar, layout, qtile, widget
+import os
+from libqtile import bar, layout, qtile, widget, hook
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
 
+@hook.subscribe.startup_once
+def autostart():
+    os.system("picom --config ~/.config/picom/picom.conf &")
+    
 mod = "mod4"
 terminal = guess_terminal()
 
@@ -84,6 +89,7 @@ keys = [
     Key([mod], "space", lazy.spawn("playerctl play-pause"), desc="Reproducir/Pausar"),  # Reproducir/Pausar
 
 ]
+
 
 
 # Add key bindings to switch VTs in Wayland.
@@ -162,6 +168,8 @@ background_paleta = {
 
 screens = [
     Screen(
+        wallpaper='~/Descargas/fondo.jpeg',
+        wallpaper_mode='stretch',
         bottom=bar.Bar(
             [
                 widget.GroupBox(background=background_paleta["negro"]),
@@ -172,7 +180,7 @@ screens = [
                 widget.WindowName(background=background_paleta["negro"]),
                 widget.Image(
                     filename="~/.config/qtile/icons/spotify.svg",
-                    background=background_paleta["spotify"],
+                    background=background_paleta["negro"],
                     mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("spotify")},
                     scale=True,
                     margin=4.5,  # Espacio alrededor de la imagen
@@ -185,8 +193,8 @@ screens = [
                     paused_text=" Pause ",
                     update_interval=1,
                     max_chars=30,
-                    foreground=background_paleta["negro"],
-                    background=background_paleta["spotify"],
+                    foreground=background_paleta["spotify"],
+                    background=background_paleta["negro"],
                 ),
                 widget.Spacer(
                     foreground=background_paleta["blanco"],
