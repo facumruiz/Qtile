@@ -30,10 +30,12 @@ from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
 
+
 @hook.subscribe.startup_once
 def autostart():
     os.system("picom --config ~/.config/picom/picom.conf &")
-    
+
+
 mod = "mod4"
 terminal = guess_terminal()
 
@@ -45,51 +47,115 @@ keys = [
     Key([mod], "Down", lazy.layout.down(), desc="Mover foco abajo"),
     Key([mod], "Up", lazy.layout.up(), desc="Mover foco arriba"),
     Key([mod], "space", lazy.layout.next(), desc="Cambiar foco a otra ventana"),
-
     # Mover y cambiar tamaño de ventanas
-    Key([mod, "shift"], "Left", lazy.layout.shuffle_left(), desc="Mover ventana a la izquierda"),
-    Key([mod, "shift"], "Right", lazy.layout.shuffle_right(), desc="Mover ventana a la derecha"),
+    Key(
+        [mod, "shift"],
+        "Left",
+        lazy.layout.shuffle_left(),
+        desc="Mover ventana a la izquierda",
+    ),
+    Key(
+        [mod, "shift"],
+        "Right",
+        lazy.layout.shuffle_right(),
+        desc="Mover ventana a la derecha",
+    ),
     Key([mod, "shift"], "Down", lazy.layout.shuffle_down(), desc="Mover ventana abajo"),
     Key([mod, "shift"], "Up", lazy.layout.shuffle_up(), desc="Mover ventana arriba"),
-    Key([mod, "control"], "Left", lazy.layout.grow_left(), desc="Expandir ventana a la izquierda"),
-    Key([mod, "control"], "Right", lazy.layout.grow_right(), desc="Expandir ventana a la derecha"),
-    Key([mod, "control"], "Down", lazy.layout.grow_down(), desc="Expandir ventana hacia abajo"),
-    Key([mod, "control"], "Up", lazy.layout.grow_up(), desc="Expandir ventana hacia arriba"),
+    Key(
+        [mod, "control"],
+        "Left",
+        lazy.layout.grow_left(),
+        desc="Expandir ventana a la izquierda",
+    ),
+    Key(
+        [mod, "control"],
+        "Right",
+        lazy.layout.grow_right(),
+        desc="Expandir ventana a la derecha",
+    ),
+    Key(
+        [mod, "control"],
+        "Down",
+        lazy.layout.grow_down(),
+        desc="Expandir ventana hacia abajo",
+    ),
+    Key(
+        [mod, "control"],
+        "Up",
+        lazy.layout.grow_up(),
+        desc="Expandir ventana hacia arriba",
+    ),
     Key([mod], "n", lazy.layout.normalize(), desc="Normalizar tamaño de ventanas"),
-    Key([mod, "shift"], "Return", lazy.layout.toggle_split(), desc="Alternar entre vistas divididas"),
-
+    Key(
+        [mod, "shift"],
+        "Return",
+        lazy.layout.toggle_split(),
+        desc="Alternar entre vistas divididas",
+    ),
     # Apertura de aplicaciones
     Key([mod], "Return", lazy.spawn(terminal), desc="Abrir terminal"),
     Key([mod], "Tab", lazy.next_layout(), desc="Cambiar de diseño"),
     Key([mod], "w", lazy.window.kill(), desc="Cerrar ventana"),
-    
     # Comandos y recarga de configuración
     Key([mod], "r", lazy.spawncmd(), desc="Ejecutar comando"),
-    Key([mod, "control"], "r", lazy.reload_config(), desc="Recargar configuración de Qtile"),
+    Key(
+        [mod, "control"],
+        "r",
+        lazy.reload_config(),
+        desc="Recargar configuración de Qtile",
+    ),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Apagar Qtile"),
-
     # Cambiar de grupo
     Key([mod], "q", lazy.screen.prev_group(), desc="Cambiar al grupo anterior"),
     Key([mod], "e", lazy.screen.next_group(), desc="Cambiar al siguiente grupo"),
-
     # Maximizar ventana
-    Key([mod], "f", lazy.window.toggle_maximize(), desc="Maximizar ventana (sin ocultar barra)"),
-
+    Key(
+        [mod],
+        "f",
+        lazy.window.toggle_maximize(),
+        desc="Maximizar ventana (sin ocultar barra)",
+    ),
     # Acceso a aplicaciones específicas
-    Key([mod], "p", lazy.spawn("/home/facu/Documentos/Emulador/ps2"), desc="Abrir emulador de PS2"),
-    
+    Key(
+        [mod],
+        "p",
+        lazy.spawn("/home/facu/Documentos/Emulador/ps2"),
+        desc="Abrir emulador de PS2",
+    ),
     # Control de luces del teclado
-    Key([mod], "Scroll_Lock", lazy.spawn("xset led on"), desc="Encender luces del teclado"),
-    Key([mod, "shift"], "Scroll_Lock", lazy.spawn("xset led off"), desc="Apagar luces del teclado"),
-
+    Key(
+        [mod],
+        "Scroll_Lock",
+        lazy.spawn("xset led on"),
+        desc="Encender luces del teclado",
+    ),
+    Key(
+        [mod, "shift"],
+        "Scroll_Lock",
+        lazy.spawn("xset led off"),
+        desc="Apagar luces del teclado",
+    ),
     # Control de sonido o reproduccion
-    Key([mod], "m", lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle"), desc="Silenciar/activar sonido"),  # Silenciar
-    Key([mod], "n", lazy.spawn("playerctl next"), desc="Siguiente pista"),  # Pasar a la siguiente pista
-    Key([mod], "b", lazy.spawn("playerctl previous"), desc="Retroceder a la pista anterior"),  # Retroceder a la pista anterior
-    Key([mod], "space", lazy.spawn("playerctl play-pause"), desc="Reproducir/Pausar"),  # Reproducir/Pausar
-
+    Key(
+        [mod],
+        "m",
+        lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle"),
+        desc="Silenciar/activar sonido",
+    ),  # Silenciar
+    Key(
+        [mod], "n", lazy.spawn("playerctl next"), desc="Siguiente pista"
+    ),  # Pasar a la siguiente pista
+    Key(
+        [mod],
+        "b",
+        lazy.spawn("playerctl previous"),
+        desc="Retroceder a la pista anterior",
+    ),  # Retroceder a la pista anterior
+    Key(
+        [mod], "space", lazy.spawn("playerctl play-pause"), desc="Reproducir/Pausar"
+    ),  # Reproducir/Pausar
 ]
-
 
 
 # Add key bindings to switch VTs in Wayland.
@@ -109,6 +175,7 @@ for vt in range(1, 8):
 groups = [Group(i) for i in "12345"]
 
 for i in groups:
+    i.label = "●"
     keys.extend(
         [
             # mod + group number = switch to group
@@ -155,35 +222,87 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
-background_paleta = {
-    "spotify": "#1db954",  # Verde Spotify
-    "rojo": "#ab3333",  # Rojo complementario
-    "verde_oscuro": "#14532d",  # Análogo verde oscuro
-    "verde_lima": "#82e776",  # Análogo verde claro
-    "blanco": "#ffffff",  # Neutro
-    "gris_claro": "#f0f0f0",  # Neutro
-    "negro": "#191414",  # Neutro oscuro
-    "hora": "#45112b",
+class ColorPalette:
+    def __init__(self):
+        self.colors = {
+            "spotify": "#1db954",  # Verde Spotify
+            "rojo": "#ab3333",  # Rojo complementario
+            "verde_oscuro": "#14532d",  # Análogo verde oscuro
+            "verde_lima": "#82e776",  # Análogo verde claro
+            "blanco": "#ffffff",  # Neutro
+            "gris_claro": "#f0f0f0",  # Neutro
+            "negro": "#191414",  # Neutro oscuro
+            "hora": "#45112b",
+            "violeta":"#2d152b",
+        }
+
+    def with_opacity(self, color_name, opacity):
+        """Retorna un color en formato RGBA con la opacidad especificada."""
+        color = self.colors.get(color_name)
+        if not color:
+            raise ValueError(f"Color '{color_name}' no encontrado en la paleta.")
+
+        r = int(color[1:3], 16)
+        g = int(color[3:5], 16)
+        b = int(color[5:7], 16)
+        a = int(opacity * 255)  # Convierte de [0, 1] a [0, 255]
+        return f"#{r:02x}{g:02x}{b:02x}{a:02x}"
+
+
+# Instancia de la paleta de colores
+background_paleta = ColorPalette()
+opacity = 0.75  # Opacidad deseada
+
+# Definición de colores específicos para GroupBox
+groupbox_colors = {
+    "background": background_paleta.with_opacity("violeta", opacity),
+    "active": background_paleta.colors["spotify"],
+    "inactive": "#b0b0b0",
+    "this_current_screen_border": "#000000",
+    "this_screen_border": "#000000",
+    "other_current_screen_border": "#404040",
+    "other_screen_border": "#404040",
+    "urgent_border": "#FF0000",
 }
 
 screens = [
     Screen(
-        wallpaper='~/Descargas/fondo.jpeg',
-        wallpaper_mode='stretch',
+        wallpaper="~/Descargas/fondo.jpeg",
+        wallpaper_mode="stretch",
         bottom=bar.Bar(
             [
-                widget.GroupBox(background=background_paleta["negro"]),
-                widget.Prompt(
-                    background=background_paleta["blanco"],
-                    foreground=background_paleta["negro"],
+                widget.GroupBox(
+                    fontsize=10,
+                    borderwidth=3,
+                    active=groupbox_colors["active"],
+                    inactive=groupbox_colors["inactive"],
+                    highlight_method="block",
+                    this_current_screen_border=groupbox_colors["this_current_screen_border"],
+                    this_screen_border=groupbox_colors["this_screen_border"],
+                    other_current_screen_border=groupbox_colors["other_current_screen_border"],
+                    other_screen_border=groupbox_colors["other_screen_border"],
+                    urgent_border=groupbox_colors["urgent_border"],
+                    disable_drag=True,
+                    highlight_color=["#000000", "#282828"],
+                    toggle=True,
+                    use_mouse_wheel=True,
+                    padding=10,
+                    spacing=5,
+                    background=groupbox_colors["background"],  # Fondo de cada grupo con opacidad
                 ),
-                widget.WindowName(background=background_paleta["negro"]),
+                widget.Prompt(
+                    background=background_paleta.with_opacity("blanco", opacity),  # Fondo blanco con opacidad
+                    foreground=background_paleta.colors["negro"],
+                ),
+                widget.WindowName(
+                    background=groupbox_colors["background"],  # Fondo negro con opacidad
+                ),
                 widget.Image(
                     filename="~/.config/qtile/icons/spotify.svg",
-                    background=background_paleta["negro"],
+                    background=groupbox_colors["background"],  # Fondo negro con opacidad
                     mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("spotify")},
                     scale=True,
-                    margin=4.5,  # Espacio alrededor de la imagen
+                    margin=4.5,
                 ),
                 widget.Mpris2(
                     name="spotify",
@@ -193,40 +312,44 @@ screens = [
                     paused_text=" Pause ",
                     update_interval=1,
                     max_chars=30,
-                    foreground=background_paleta["spotify"],
-                    background=background_paleta["negro"],
+                    foreground=groupbox_colors["active"],
+                    background=groupbox_colors["background"],  # Fondo negro con opacidad
                 ),
                 widget.Spacer(
-                    foreground=background_paleta["blanco"],
-                    background=background_paleta["negro"],
+                    foreground=background_paleta.colors["blanco"],
+                    background=groupbox_colors["background"],  # Fondo negro con opacidad
                     length=10,
                 ),
                 widget.Clock(
                     format="%d/%m/%Y %a %I:%M %p",
-                    foreground=background_paleta["blanco"],
-                    background=background_paleta["negro"],
+                    foreground=background_paleta.colors["blanco"],
+                    background=groupbox_colors["background"],  # Fondo negro con opacidad
                 ),
                 widget.Spacer(
-                    foreground=background_paleta["blanco"],
-                    background=background_paleta["rojo"],
+                    foreground=background_paleta.colors["blanco"],
+                    background=background_paleta.with_opacity("rojo", opacity),  # Fondo rojo con opacidad
                     length=10,
                 ),
                 widget.QuickExit(
                     default_text="⏻",
                     fontsize=18,
-                    background=background_paleta["rojo"],
-                    foreground=background_paleta["blanco"],
+                    background=background_paleta.with_opacity("rojo", opacity),  # Fondo rojo con opacidad
+                    foreground=background_paleta.colors["blanco"],
                 ),
                 widget.Spacer(
-                    foreground=background_paleta["blanco"],
-                    background=background_paleta["rojo"],
+                    foreground=background_paleta.colors["blanco"],
+                    background=background_paleta.with_opacity("rojo", opacity),  # Fondo rojo con opacidad
                     length=10,
                 ),
             ],
             24,
+            background=groupbox_colors["background"],  # Fondo negro con opacidad para la barra
         ),
     ),
 ]
+
+
+
 # Drag floating layouts.
 mouse = [
     Drag(
