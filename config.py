@@ -308,11 +308,16 @@ screens = [
                         "background"
                     ],  # Fondo negro con opacidad
                 ),
+                widget.ThermalSensor(
+                    foreground=background_paleta.colors["spotify"],  # Verde para temperaturas menores de 30 grados
+                    foreground_alert="ff0000",  # Rojo para temperaturas mayores o iguales a 30 grados
+                    background=groupbox_colors["background"],
+                    threshold=60,  # Umbral de temperatura
+                    fmt="Temp: {}",
+                    padding=5,
+                ),
                 widget.Image(
                     filename="~/.config/qtile/icons/spotify.svg",
-                    background=groupbox_colors[
-                        "background"
-                    ],  # Fondo negro con opacidad
                     mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("spotify")},
                     scale=True,
                     margin=8.5,
@@ -326,51 +331,30 @@ screens = [
                     update_interval=1,
                     max_chars=30,
                     foreground=groupbox_colors["active"],
-                    background=groupbox_colors[
-                        "background"
-                    ],  # Fondo negro con opacidad
                 ),
                 widget.Spacer(
                     foreground=background_paleta.colors["blanco"],
-                    background=groupbox_colors[
-                        "background"
-                    ],  # Fondo negro con opacidad
                     length=20,
                 ),
                 widget.Clock(
                     format="%I:%M %p\n%d/%m/%Y",  # Formato con la hora en la parte superior y la fecha en la parte inferior
                     foreground=background_paleta.colors["blanco"],
-                    background=groupbox_colors[
-                        "background"
-                    ],  # Fondo negro con opacidad
                 ),
                 widget.Spacer(
                     foreground=background_paleta.colors["blanco"],
-                    background=groupbox_colors[
-                        "background"
-                    ],  # Fondo negro con opacidad
                     length=20,
                 ),
                 widget.Spacer(
                     foreground=background_paleta.colors["blanco"],
-                    background=background_paleta.with_opacity(
-                        "rojo", opacity
-                    ),  # Fondo rojo con opacidad
                     length=10,
                 ),
                 widget.QuickExit(
                     default_text="⏻",
                     fontsize=18,
-                    background=background_paleta.with_opacity(
-                        "rojo", opacity
-                    ),  # Fondo rojo con opacidad
                     foreground=background_paleta.colors["blanco"],
                 ),
                 widget.Spacer(
                     foreground=background_paleta.colors["blanco"],
-                    background=background_paleta.with_opacity(
-                        "rojo", opacity
-                    ),  # Fondo rojo con opacidad
                     length=10,
                 ),
             ],
