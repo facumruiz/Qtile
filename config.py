@@ -6,23 +6,7 @@
 # Copyright (c) 2013 horsik
 # Copyright (c) 2013 Tao Sauvage
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# MIT License
 
 import os
 from libqtile import bar, layout, qtile, widget, hook
@@ -30,24 +14,112 @@ from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
 
+# ===== CONFIGURACIÓN INICIAL =====
+mod = "mod4"
+terminal = guess_terminal()
 
+
+# ===== STICKY WINDOWS (VENTANAS PEGAJOSAS) =====
+sticky_windows = []
+
+@lazy.function
+def toggle_sticky_windows(qtile, window=None):
+    """Alternar estado sticky de una ventana"""
+    if window is None:
+        window = qtile.current_screen.group.current_window
+    if window in sticky_windows:
+        sticky_windows.remove(window)
+    else:
+        sticky_windows.append(window)
+    return window
+
+
+# ===== HOOKS =====
 @hook.subscribe.startup_once
 def autostart():
     os.system("picom --config ~/.config/picom/picom.conf &")
 
 
-mod = "mod4"
-terminal = guess_terminal()
+@hook.subscribe.setgroup
+def move_sticky_windows():
+    """Mover ventanas sticky al grupo actual SIN robar el foco"""
+    for window in sticky_windows:
+        window.togroup(switch_group=False)  # ← Clave: switch_group=False
 
+
+@hook.subscribe.client_killed
+def remove_sticky_windows(window):
+    """Limpiar ventanas sticky cuando se cierran"""
+    if window in sticky_windows:
+        sticky_windows.remove(window)
+
+
+@hook.subscribe.client_managed
+def auto_sticky_windows(window):
+    """Hacer Picture-in-Picture automáticamente sticky"""
+    info = window.info()
+    # Para Firefox en español el nombre puede variar
+    if (info['wm_class'] and 'firefox' in str(info['wm_class']).lower()
+            and info['name'] and 'picture-in-picture' in info['name'].lower()):
+        sticky_windows.append(window)
+
+
+# ===== PALETA DE COLORES =====
+colors = {
+    "background": "#1a1b26",
+    "foreground": "#a9b1d6",
+    "accent": "#7aa2f7",
+    "secondary": "#9ece6a",
+    "secondary-memory": "#9ece6a2d",
+    "alert": "#f7768e3b",
+    "cyan": "#7dcfff",
+    "purple": "#bb9af7",
+    "yellow": "#e0af68",
+    "gray": "#565f89",
+    "dark_gray": "#24283b",
+    "dark-purple": "#9e7cd839",
+    "deep-purple": "#5133865C",
+    "spotify": "#5f9b7471",
+    "border": "#414868",
+}
+
+# ===== DISEÑOS =====
+layouts = [
+    layout.Columns(
+        border_focus=colors["accent"],
+        border_normal=colors["dark_gray"],
+        border_width=2,
+        margin=3,
+    ),
+    layout.Max(),
+]
+
+floating_layout = layout.Floating(
+    float_rules=[
+        *layout.Floating.default_float_rules,
+        Match(wm_class="firefox-esr"),
+        Match(title="Picture-in-Picture"),
+        Match(wm_class="confirmreset"),
+        Match(wm_class="makebranch"),
+        Match(wm_class="maketag"),
+        Match(wm_class="ssh-askpass"),
+        Match(title="branchdialog"),
+        Match(title="pinentry"),
+    ],
+    border_focus=colors["accent"],
+    border_normal=colors["dark_gray"],
+    border_width=2,
+)
+
+# ===== ATAJOS DE TECLADO =====
 keys = [
-    # Control de ventanas
     Key([mod, "shift"], "f", lazy.window.toggle_floating(), desc="Toggle floating"),
+    Key([mod], "s", toggle_sticky_windows(), desc="Toggle sticky window"),  # ← NUEVO
     Key([mod], "Left", lazy.layout.left(), desc="Mover foco a la izquierda"),
     Key([mod], "Right", lazy.layout.right(), desc="Mover foco a la derecha"),
     Key([mod], "Down", lazy.layout.down(), desc="Mover foco abajo"),
     Key([mod], "Up", lazy.layout.up(), desc="Mover foco arriba"),
     Key([mod], "space", lazy.layout.next(), desc="Cambiar foco a otra ventana"),
-    # Mover y cambiar tamaño de ventanas
     Key(
         [mod, "shift"],
         "Left",
@@ -93,11 +165,11 @@ keys = [
         lazy.layout.toggle_split(),
         desc="Alternar entre vistas divididas",
     ),
-    # Apertura de aplicaciones
     Key([mod], "Return", lazy.spawn(terminal), desc="Abrir terminal"),
     Key([mod], "Tab", lazy.next_layout(), desc="Cambiar de diseño"),
     Key([mod], "w", lazy.window.kill(), desc="Cerrar ventana"),
-    # Comandos y recarga de configuración
+    Key([mod], "m", lazy.layout.maximize(), desc="Maximizar en el layout"),
+    Key([mod], "f", lazy.window.toggle_fullscreen(), desc="Pantalla completa"),
     Key([mod], "r", lazy.spawncmd(), desc="Ejecutar comando"),
     Key(
         [mod, "control"],
@@ -106,24 +178,14 @@ keys = [
         desc="Recargar configuración de Qtile",
     ),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Apagar Qtile"),
-    # Cambiar de grupo
     Key([mod], "q", lazy.screen.prev_group(), desc="Cambiar al grupo anterior"),
     Key([mod], "e", lazy.screen.next_group(), desc="Cambiar al siguiente grupo"),
-    # Maximizar ventana
-    Key(
-        [mod],
-        "f",
-        lazy.window.toggle_maximize(),
-        desc="Maximizar ventana (sin ocultar barra)",
-    ),
-    # Acceso a aplicaciones específicas
     Key(
         [mod],
         "p",
         lazy.spawn("/home/facu/Documentos/Emulador/ps2"),
         desc="Abrir emulador de PS2",
     ),
-    # Control de luces del teclado
     Key(
         [mod],
         "Scroll_Lock",
@@ -136,31 +198,25 @@ keys = [
         lazy.spawn("xset led off"),
         desc="Apagar luces del teclado",
     ),
-    # Control de sonido o reproduccion
     Key(
-        [mod],
+        [mod, "shift"],
         "m",
         lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle"),
         desc="Silenciar/activar sonido",
-    ),  # Silenciar
-    Key(
-        [mod], "n", lazy.spawn("playerctl next"), desc="Siguiente pista"
-    ),  # Pasar a la siguiente pista
+    ),
+    Key([mod], "n", lazy.spawn("playerctl next"), desc="Siguiente pista"),
     Key(
         [mod],
         "b",
         lazy.spawn("playerctl previous"),
         desc="Retroceder a la pista anterior",
-    ),  # Retroceder a la pista anterior
-    Key(
-        [mod], "space", lazy.spawn("playerctl play-pause"), desc="Reproducir/Pausar"
-    ),  # Reproducir/Pausar
+    ),
+    Key([mod], "space", lazy.spawn("playerctl play-pause"), desc="Reproducir/Pausar"),
+    Key([], "Print", lazy.spawn("flameshot gui")),
+    Key([mod], "Print", lazy.spawn("flameshot screen")),
 ]
 
-
-# Add key bindings to switch VTs in Wayland.
-# We can't check qtile.core.name in default config as it is loaded before qtile is started
-# We therefore defer the check until the key binding is run by using .when(func=...)
+# Add VT switching for Wayland
 for vt in range(1, 8):
     keys.append(
         Key(
@@ -171,203 +227,221 @@ for vt in range(1, 8):
         )
     )
 
+# ===== GRUPOS =====
+groups = [Group(i) for i in "123456789"]
 
-groups = [Group(i) for i in "12345"]
+# Emoji inicial
+emoji_inactivo = "󰈈"
+emoji_activo = "󰈉"
 
+# Etiquetar grupos inicialmente
 for i in groups:
-    i.label = "●"
+    i.label = emoji_inactivo
     keys.extend(
         [
-            # mod + group number = switch to group
             Key(
                 [mod],
                 i.name,
                 lazy.group[i.name].toscreen(),
                 desc=f"Switch to group {i.name}",
             ),
-            # mod + shift + group number = switch to & move focused window to group
             Key(
                 [mod, "shift"],
                 i.name,
                 lazy.window.togroup(i.name, switch_group=True),
                 desc=f"Switch to & move focused window to group {i.name}",
             ),
-            # Or, use below if you prefer not to switch to that group.
-            # # mod + shift + group number = move focused window to group
-            # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
-            #     desc="move focused window to group {}".format(i.name)),
         ]
     )
 
-layouts = [
-    layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
-    layout.Max(),
-    # Try more layouts by unleashing below layouts.
-    # layout.Stack(num_stacks=2),
-    # layout.Bsp(),
-    # layout.Matrix(),
-    # layout.MonadTall(),
-    # layout.MonadWide(),
-    # layout.RatioTile(),
-    # layout.Tile(),
-    # layout.TreeTab(),
-    # layout.VerticalTile(),
-    # layout.Zoomy(),
-]
 
+# Hook simple para cambiar el emoji del grupo activo
+@hook.subscribe.setgroup
+def cambiar_emoji(grupo):
+    for g in qtile.groups:
+        g.label = emoji_activo if g == grupo else emoji_inactivo
+
+
+# ===== CONFIGURACIÓN DE WIDGETS =====
 widget_defaults = dict(
-    font="sans",
-    fontsize=12,
+    font="FiraCode Nerd Font Mono",
+    fontsize=30,
     padding=3,
 )
 extension_defaults = widget_defaults.copy()
 
-
-class ColorPalette:
-    def __init__(self):
-        self.colors = {
-            "spotify": "#1db954",  # Verde Spotify
-            "rojo": "#ab3333",  # Rojo complementario
-            "verde_oscuro": "#14532d",  # Análogo verde oscuro
-            "verde_lima": "#82e776",  # Análogo verde claro
-            "blanco": "#ffffff",  # Neutro
-            "gris_claro": "#f0f0f0",  # Neutro
-            "negro": "#191414",  # Neutro oscuro
-            "hora": "#45112b",
-            "violeta": "#2d152b",
-        }
-
-    def with_opacity(self, color_name, opacity):
-        """Retorna un color en formato RGBA con la opacidad especificada."""
-        color = self.colors.get(color_name)
-        if not color:
-            raise ValueError(f"Color '{color_name}' no encontrado en la paleta.")
-
-        r = int(color[1:3], 16)
-        g = int(color[3:5], 16)
-        b = int(color[5:7], 16)
-        a = int(opacity * 255)  # Convierte de [0, 1] a [0, 255]
-        return f"#{r:02x}{g:02x}{b:02x}{a:02x}"
-
-
-# Instancia de la paleta de colores
-background_paleta = ColorPalette()
-opacity = 0.75  # Opacidad deseada
-
-# Definición de colores específicos para GroupBox
-groupbox_colors = {
-    "background": background_paleta.with_opacity("negro", opacity),
-    "active": background_paleta.colors["spotify"],
-    "inactive": "#b0b0b0",
-    "this_current_screen_border": "#000000",
-    "this_screen_border": "#000000",
-    "other_current_screen_border": "#404040",
-    "other_screen_border": "#404040",
-    "urgent_border": "#FF0000",
+groupbox_settings = {
+    "font": "FiraCode Nerd Font Mono",
+    "fontsize": 30,
+    "margin_y": 3,
+    "margin_x": 0,
+    "padding_y": 5,
+    "padding_x": 3,
+    "borderwidth": 3,
+    "active": colors["foreground"],
+    "inactive": colors["gray"],
+    "rounded": False,
+    "highlight_color": colors["dark_gray"],
+    "highlight_method": "block",
+    "this_current_screen_border": colors["deep-purple"],
+    "this_screen_border": colors["dark-purple"],
+    "other_current_screen_border": colors["dark_gray"],
+    "other_screen_border": colors["dark_gray"],
+    "foreground": colors["foreground"],
+    "background": colors["dark_gray"],
+    "disable_drag": True,
+    "toggle": True,
+    "use_mouse_wheel": True,
 }
 
+# ===== PANTALLAS Y BARRAS =====
 screens = [
     Screen(
-        wallpaper="~/Descargas/fondo.jpeg",
+        wallpaper="~/Imágenes/fondos/tool.webp",
         wallpaper_mode="stretch",
         bottom=bar.Bar(
             [
-                widget.GroupBox(
-                    fontsize=10,
-                    borderwidth=3,
-                    active=groupbox_colors["active"],
-                    inactive=groupbox_colors["inactive"],
-                    highlight_method="block",
-                    this_current_screen_border=groupbox_colors[
-                        "this_current_screen_border"
-                    ],
-                    this_screen_border=groupbox_colors["this_screen_border"],
-                    other_current_screen_border=groupbox_colors[
-                        "other_current_screen_border"
-                    ],
-                    other_screen_border=groupbox_colors["other_screen_border"],
-                    urgent_border=groupbox_colors["urgent_border"],
-                    disable_drag=True,
-                    highlight_color=["#000000", "#282828"],
-                    toggle=True,
-                    use_mouse_wheel=True,
-                    padding=10,
-                    spacing=5,
-                    background=groupbox_colors[
-                        "background"
-                    ],  # Fondo de cada grupo con opacidad
+                widget.GroupBox(**groupbox_settings),
+                widget.TextBox(
+                    text="",
+                    font="FiraCode Nerd Font Mono",
+                    fontsize=30,
+                    foreground=colors["foreground"],
+                    padding=8,
+                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("firefox")},
                 ),
-                widget.Prompt(
-                    background=background_paleta.with_opacity(
-                        "blanco", opacity
-                    ),  # Fondo blanco con opacidad
-                    foreground=background_paleta.colors["negro"],
+                widget.TextBox(
+                    text="",
+                    font="FiraCode Nerd Font Mono",
+                    fontsize=30,
+                    foreground=colors["foreground"],
+                    padding=8,
+                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("discord")},
                 ),
-                widget.WindowName(
-                    background=groupbox_colors[
-                        "background"
-                    ],  # Fondo negro con opacidad
+                widget.TextBox(
+                    text="",
+                    font="FiraCode Nerd Font Mono",
+                    fontsize=30,
+                    foreground=colors["foreground"],
+                    padding=8,
+                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn(terminal)},
+                ),
+                widget.TextBox(text="­", padding=3),
+                widget.TextBox(
+                    text="",
+                    font="FiraCode Nerd Font Mono",
+                    fontsize=30,
+                    foreground=colors["foreground"],
+                    padding=3,
+                    border_width=10,
+                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("spotify")},
+                ),
+                # widget.Mpris2(
+                #     name="spotify",
+                #     objname="org.mpris.MediaPlayer2.spotify",
+                #     display_metadata=["xesam:title", "xesam:artist"],
+                #     scroll=True,
+                #     scroll_interval=0.05,
+                #     scroll_delay=2,
+                #     width=150,
+                #     foreground=colors["foreground"],
+                #     playing_text="{track}",
+                #     paused_text="{track}",
+                #     fontsize=13,
+                #     padding=5,
+                #     mouse_callbacks={
+                #         "Button1": lambda: qtile.cmd_spawn("playerctl play-pause"),
+                #         "Button3": lambda: qtile.cmd_spawn("spotify"),
+                #         "Button4": lambda: qtile.cmd_spawn("playerctl next"),
+                #         "Button5": lambda: qtile.cmd_spawn("playerctl previous"),
+                #     },
+                # ),
+                widget.TextBox(text="­", padding=3),
+                widget.Prompt(fontsize=15, foreground=colors["purple"]),
+                widget.Spacer(length=bar.STRETCH),
+                widget.Memory(
+                    format="{MemUsed: .1f}G |{MemTotal: .1f}G",
+                    font="FiraCode Nerd Font Mono",
+                    foreground=colors["cyan"],
+                    background=colors["dark_gray"],
+                    fontsize=13,
+                    padding=8,
+                    measure_mem="G",
+                    update_interval=1.0,
+                ),
+                widget.TextBox(text="­", padding=3, background=colors["dark_gray"]),
+                widget.TextBox(
+                    text="­", padding=4, background=colors["secondary-memory"]
                 ),
                 widget.ThermalSensor(
-                    foreground=background_paleta.colors["spotify"],  # Verde para temperaturas menores de 30 grados
-                    foreground_alert="ff0000",  # Rojo para temperaturas mayores o iguales a 30 grados
-                    background=groupbox_colors["background"],
-                    threshold=60,  # Umbral de temperatura
-                    fmt="Temp: {}",
-                    padding=5,
+                    foreground=colors["secondary"],
+                    foreground_alert=colors["alert"],
+                    background=colors["secondary-memory"],
+                    threshold=60,
+                    fmt="{}",
+                    fontsize=13,
+                    padding=8,
                 ),
-                widget.Image(
-                    filename="~/.config/qtile/icons/spotify.svg",
-                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("spotify")},
-                    scale=True,
-                    margin=8.5,
+                widget.TextBox(
+                    text="­", padding=3, background=colors["secondary-memory"]
                 ),
-                widget.Mpris2(
-                    name="spotify",
-                    objname="org.mpris.MediaPlayer2.spotify",
-                    display_metadata=["xesam:title", "xesam:artist"],
-                    playing_text="{track}  ",
-                    paused_text=" Pause ",
-                    update_interval=1,
-                    max_chars=30,
-                    foreground=groupbox_colors["active"],
+                widget.TextBox(text="­", padding=3),
+                widget.TextBox(
+                    text="",
+                    fontsize=20,
                 ),
-                widget.Spacer(
-                    foreground=background_paleta.colors["blanco"],
-                    length=20,
+                widget.Volume(
+                    fmt="{}",
+                    font="FiraCode Nerd Font Mono",
+                    foreground=colors["foreground"],
+                    fontsize=14,
+                    padding=8,
+                    mouse_callbacks={"Button1": lambda: qtile.cmd_spawn("pavucontrol")},
+                ),
+                widget.TextBox(text="­", padding=3),
+                widget.TextBox(text="­", padding=3, background=colors["dark-purple"]),
+                widget.TextBox(
+                    text="󰥔",
+                    background=colors["dark-purple"],
+                    foreground=colors["purple"],
+                    fontsize=20,
                 ),
                 widget.Clock(
-                    format="%I:%M %p\n%d/%m/%Y",  # Formato con la hora en la parte superior y la fecha en la parte inferior
-                    foreground=background_paleta.colors["blanco"],
+                    format="%H:%M",
+                    font="FiraCode Nerd Font Mono",
+                    fontsize=14,
+                    background=colors["dark-purple"],
+                    foreground=colors["purple"],
+                    markup=True,
                 ),
-                widget.Spacer(
-                    foreground=background_paleta.colors["blanco"],
-                    length=20,
+                widget.TextBox(text="­", padding=3, background=colors["dark-purple"]),
+                widget.TextBox(
+                    text="󰃭",
+                    background=colors["dark-purple"],
+                    foreground=colors["purple"],
+                    fontsize=20,
                 ),
-                widget.Spacer(
-                    foreground=background_paleta.colors["blanco"],
-                    length=10,
+                widget.Clock(
+                    format="%d/%m/%Y",
+                    font="FiraCode Nerd Font Mono",
+                    fontsize=14,
+                    background=colors["dark-purple"],
+                    foreground=colors["purple"],
+                    markup=True,
                 ),
-                widget.QuickExit(
-                    default_text="⏻",
-                    fontsize=18,
-                    foreground=background_paleta.colors["blanco"],
-                ),
-                widget.Spacer(
-                    foreground=background_paleta.colors["blanco"],
-                    length=10,
-                ),
+                widget.TextBox(text="­", padding=3, background=colors["dark-purple"]),
             ],
-            35,
-            background=groupbox_colors[
-                "background"
-            ],  # Fondo negro con opacidad para la barra
+            28,
+            background=colors["dark_gray"] + "80",
+            margin=[0, 300, 0, 300],
+            border_color=colors["border"],
+            border_width=[1, 1, 1, 1],
+            opacity=0.5,
         ),
     ),
 ]
 
-
-# Drag floating layouts.
+# ===== CONFIGURACIÓN DEL RATÓN =====
 mouse = [
     Drag(
         [mod],
@@ -381,45 +455,21 @@ mouse = [
     Click([mod], "Button2", lazy.window.bring_to_front()),
 ]
 
+# ===== CONFIGURACIÓN GENERAL =====
 dgroups_key_binder = None
-dgroups_app_rules = []  # type: list
+dgroups_app_rules = []
 follow_mouse_focus = True
 bring_front_click = False
 floats_kept_above = True
 cursor_warp = False
-floating_layout = layout.Floating(
-    float_rules=[
-        # Run the utility of `xprop` to see the wm class and name of an X client.
-        *layout.Floating.default_float_rules,
-        Match(wm_class="confirmreset"),  # gitk
-        Match(wm_class="makebranch"),  # gitk
-        Match(wm_class="maketag"),  # gitk
-        Match(wm_class="ssh-askpass"),  # ssh-askpass
-        Match(title="branchdialog"),  # gitk
-        Match(title="pinentry"),  # GPG key password entry
-    ]
-)
 auto_fullscreen = True
 focus_on_window_activation = "smart"
 reconfigure_screens = True
-
-# If things like steam games want to auto-minimize themselves when losing
-# focus, should we respect this or not?
 auto_minimize = True
 
-# When using the Wayland backend, this can be used to configure input devices.
+# ===== CONFIGURACIÓN WAYLAND =====
 wl_input_rules = None
-
-# xcursor theme (string or None) and size (integer) for Wayland backend
 wl_xcursor_theme = None
 wl_xcursor_size = 24
 
-# XXX: Gasp! We're lying here. In fact, nobody really uses or cares about this
-# string besides java UI toolkits; you can see several discussions on the
-# mailing lists, GitHub issues, and other WM documentation that suggest setting
-# this string if your java app doesn't work correctly. We may as well just lie
-# and say that we're a working one by default.
-#
-# We choose LG3D to maximize irony: it is a 3D non-reparenting WM written in
-# java that happens to be on java's whitelist.
 wmname = "LG3D"
